@@ -1,15 +1,20 @@
 const express = require("express")
 const cors = require("cors")
-const blogRoutes = require("./routes/blogRoutes")
+const blogs = require("./data/blogs")
 
 const app = express()
 const PORT = 8080
 
-app.use(cors()) // 👈 THÊM DÒNG NÀY để tránh lỗi CORS
+// Middlewares
+app.use(cors())
 app.use(express.json())
 
-app.use("/blogs", blogRoutes)
+// Route
+app.get("/blogs", (req, res) => {
+  return res.json(blogs)
+})
 
+// Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server đang chạy ở http://localhost:${PORT}`)
 })

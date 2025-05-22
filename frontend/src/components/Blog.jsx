@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import config from '../config'
+import { getUserInfo } from '../auth'
 
 export default function Blog() {
   const [posts, setPosts] = useState([])
@@ -61,8 +62,10 @@ export default function Blog() {
     e.preventDefault()
     setIsSubmitting(true)
     setSubmitMessage('')
+    const { fullName } = getUserInfo()
+    console.log('👤', fullName)
     try {
-      await axios.post(`${config.API_URL}/blogs`, newPost)
+      await axios.post(`${config.API_URL}/blogs`, { ...newPost, author: fullName })
       setNewPost({ title: '', content: '' })
       setSubmitMessage('✅ Blog post created successfully!')
       fetchPosts()
@@ -199,6 +202,16 @@ export default function Blog() {
               <Link to={`/blogs/${post.id}`} className='text-blue-600 hover:text-blue-800 font-medium'>
                 {post.title}
               </Link>
+              {post.author === getUserInfo().fullName && (
+                <>
+                  <button className='bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 mr-2'>
+                    Edit
+                  </button>
+                  <button className='bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-red-500'>
+                    Delete
+                  </button>
+                </>
+              )}
             </li>
           ))}
         </ul>

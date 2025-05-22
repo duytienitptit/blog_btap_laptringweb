@@ -115,11 +115,12 @@ app.get('/blogs', async (req, res) => {
   try {
     // Nếu không có keywords thì trả lại toàn bộ blogs
     if (!keywords) {
-      const blogs = await Blog.find({}, '_id title')
+      const blogs = await Blog.find({}, '_id title author')
       return res.json(
         blogs.map(blog => ({
           id: blog._id,
-          title: blog.title
+          title: blog.title,
+          author: blog.author
         }))
       )
     }
@@ -161,19 +162,21 @@ app.get('/blogs/:id', async (req, res) => {
 
 // Add new blog post
 app.post('/blogs', async (req, res) => {
-  const { title, content } = req.body
+  const { title, content, author } = req.body
 
   // Validate required fields
-  if (!title || !content) {
-    return res.status(400).json({ error: 'Title and content are required' })
+  if (!title || !content || !author) {
+    return res.status(400).json({ error: 'Title, content, and author are required' })
   }
 
   try {
     // Create new blog object
     const newBlog = new Blog({
       title,
-      content
+      content,
+      author
     })
+    console.log('New blog object:', newBlog)
 
     // Save to database
     await newBlog.save()
@@ -182,6 +185,58 @@ app.post('/blogs', async (req, res) => {
     return res.status(201).json(newBlog)
   } catch (err) {
     console.error('❌ Error creating blog:', err)
+    return res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+// Edit blog post
+app.put('/blogs/:id', async (req, res) => {
+  const id = req.params.id
+  const { title, content } = req.body
+
+  // Validate required fields
+  if (!title || !content) {
+    return res.status(400).json({ error: 'Title and content are required' })
+  }
+
+  try {
+    // Find and update the blog post
+    const updatedBlog = await Blog.findByIdAndUpdate(
+      id,
+      { title, content },
+      { new: true } // Return the updated document
+    )
+
+    // If blog not found
+    if (!updatedBlog) {
+      return res.status(404).json({ error: 'Blog not found' })
+    }
+
+    // Return the updated blog
+    return res.json(updatedBlog)
+  } catch (err) {
+    console.error('❌ Error updating blog:', err)
+    return res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+// Delete blog post
+app.delete('/blogs/:id', async (req, res) => {
+  const id = req.params.id
+
+  try {
+    // Find and delete the blog post
+    const deletedBlog = await Blog.findByIdAndDelete(id)
+
+    // If blog not found
+    if (!deletedBlog) {
+      return res.status(404).json({ error: 'Blog not found' })
+    }
+
+    // Return success message
+    return res.json({ message: 'Blog deleted successfully' })
+  } catch (err) {
+    console.error('❌ Error deleting blog:', err)
     return res.status(500).json({ error: 'Internal server error' })
   }
 })

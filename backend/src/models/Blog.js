@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const User = require('./User')
 
 const blogSchema = new mongoose.Schema({
   title: {
@@ -8,6 +9,9 @@ const blogSchema = new mongoose.Schema({
   content: {
     type: String,
     required: true
+  },
+  author: {
+    type: String
   },
   createdAt: {
     type: Date,
